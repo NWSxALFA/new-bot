@@ -1,0 +1,33 @@
+{
+    "earn_channels": [],
+    "earn_posts": [],
+    "required_channels": [
+        {
+            "username": "@ALFA_BONUS_NEWS",
+            "title": "ALFA BONUS NEWS"
+        },
+        {
+            "username": "@NWS_ALFA_07",
+            "title": "NWS ALFA 07"
+        },
+        {
+            "username": "@NWS_ALFA_UC",
+            "title": "NWS ALFA UC"
+        }
+    ],
+    "referral_levels": {
+        "1": 1000,
+        "2": 300,
+        "3": 100
+    },
+    "min_withdrawal": 50000,
+    "daily_bonus_range": [
+        100,
+        500
+    ],
+    "stars_rate": 350,
+    "referral_requirements": {
+        "level1": 10,
+        "level2": 3
+    }
+}

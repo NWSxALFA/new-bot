@@ -1,0 +1,58 @@
+{
+    "5996676608": {
+        "user_id": "5996676608",
+        "username": "@NWSxALFA",
+        "first_name": "𝙈𝙖𝙦𝙨𝙪𝙙𝙟𝙤𝙣",
+        "last_name": "",
+        "balance": 1550,
+        "stars": 0,
+        "refs": {
+            "level1": 1,
+            "level2": 0,
+            "level3": 0
+        },
+        "completed_tasks": {
+            "channels": [],
+            "posts": []
+        },
+        "bonus_date": "2026-03-14",
+        "orders": [],
+        "language": "uz",
+        "referred_by": null,
+        "join_date": "2026-03-14 20:50:08",
+        "last_active": "2026-03-14 20:51:37",
+        "used_promo": [],
+        "blocked": false,
+        "notifications": true,
+        "games_played": 0,
+        "games_won": 0
+    },
+    "8256491359": {
+        "user_id": "8256491359",
+        "username": "@MahammadjonovFayzullo",
+        "first_name": "Mahammadjonov Fayzullo",
+        "last_name": "20:53",
+        "balance": 243,
+        "stars": 0,
+        "refs": {
+            "level1": 0,
+            "level2": 0,
+            "level3": 0
+        },
+        "completed_tasks": {
+            "channels": [],
+            "posts": []
+        },
+        "bonus_date": "2026-03-14",
+        "orders": [],
+        "language": "uz",
+        "referred_by": "5996676608",
+        "join_date": "2026-03-14 20:52:59",
+        "last_active": "2026-03-14 20:52:59",
+        "used_promo": [],
+        "blocked": false,
+        "notifications": true,
+        "games_played": 0,
+        "games_won": 0
+    }
+}
