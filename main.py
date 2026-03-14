@@ -22,8 +22,8 @@ from telebot.types import (
 # =====================================
 # CONFIG
 # =====================================
-TOKEN = "BU_YERGA_BOT_TOKEN"
-PAYMENT_PROVIDER_TOKEN = "BU_YERGA_PAYMENT_TOKEN"
+TOKEN = "7141972686:AAFgCSNltVZxji_M2NjuEYaOfdv5WJcqcv8"
+PAYMENT_PROVIDER_TOKEN = "398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065"
 PORT = 8000
 
 bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
