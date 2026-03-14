@@ -757,8 +757,9 @@ def next_post(c):
 
 
 # =====================================
-# PAYMENTS
+# PAYMENTS MODULE
 # =====================================
+
 @bot.message_handler(func=lambda m: m.text == "➕ Hisobni to'ldirish")
 @subscription_required
 def topup_balance(message):
@@ -773,11 +774,14 @@ def topup_balance(message):
 @bot.callback_query_handler(func=lambda c: c.data.startswith("pay_"))
 def process_payment(c):
     uid = str(c.from_user.id)
+
+    # Stars orqali to‘lov
     if c.data == "pay_stars":
         msg = bot.send_message(c.message.chat.id, "⭐ Nechta star ishlatmoqchisiz? (1 star = 350 so'm)")
         bot.register_next_step_handler(msg, process_stars_payment)
         return
 
+    # Oddiy to‘lov
     amount = int(c.data.split("_")[1])
     if not PAYMENT_PROVIDER_TOKEN:
         bot.answer_callback_query(c.id, "❌ PAYMENT_PROVIDER_TOKEN yo'q")
@@ -807,62 +811,57 @@ def process_payment(c):
         bot.answer_callback_query(c.id, "✅ Invoice yuborildi")
     except Exception as e:
         logger.error(f"Invoice xato: {e}")
-        order = next((o for o in reversed(orders) if o.get("payload") == payload), None)
-        if order:
-            order["status"] = "failed"
-            Database.save_all(users, orders, config, promo_codes)
-        bot.send_message(c.message.chat.id, f"❌ Invoice yaratilmadi: {e}")
+        bot.send_message(c.message.chat.id, "❌ Invoice yuborishda xato yuz berdi.")
 
 
 def process_stars_payment(message):
     uid = str(message.from_user.id)
     try:
-        stars = int(message.text.strip())
-    except Exception:
-        msg = bot.send_message(message.chat.id, "❌ Son kiriting")
-        bot.register_next_step_handler(msg, process_stars_payment)
-        return
-    if stars <= 0:
-        msg = bot.send_message(message.chat.id, "❌ Musbat son kiriting")
-        bot.register_next_step_handler(msg, process_stars_payment)
-        return
-    if users[uid].get("stars", 0) < stars:
-        bot.send_message(message.chat.id, f"❌ Yetarli stars yo'q. Sizda: {users[uid].get('stars', 0)}")
-        return
-    amount = stars * int(config.get("stars_rate", 350))
-    users[uid]["stars"] -= stars
-    users[uid]["balance"] += amount
-    create_order("stars_topup", uid, {"stars": stars, "amount": amount, "status": "completed", "completed_date": datetime.now().isoformat()})
-    Database.save_all(users, orders, config, promo_codes)
-    bot.send_message(message.chat.id, f"✅ {stars} stars ishlatildi.\n💰 +{amount} so'm qo'shildi.", reply_markup=build_main_menu(is_admin(message.from_user.id)))
+        stars = int(message.text)
+        amount = stars * config.get("stars_rate", 350)
+        if users[uid]["stars"] < stars:
+            bot.send_message(message.chat.id, "❌ Yetarli stars yo'q")
+            return
+        users[uid]["stars"] -= stars
+        users[uid]["balance"] += amount
+        create_order("topup_stars", uid, {"stars": stars, "amount": amount})
+        Database.save_all(users, orders, config, promo_codes)
+        bot.send_message(message.chat.id, f"✅ {stars} stars ishlatildi!\n💰 Balans: {users[uid]['balance']} so'm")
+    except ValueError:
+        bot.send_message(message.chat.id, "❌ Noto'g'ri qiymat kiritildi")
 
 
-@bot.pre_checkout_query_handler(func=lambda q: True)
-def pre_checkout(q):
-    try:
-        bot.answer_pre_checkout_query(q.id, ok=True)
-    except Exception as e:
-        logger.error(f"pre_checkout xato: {e}")
-        bot.answer_pre_checkout_query(q.id, ok=False, error_message="To'lovni qayta ishlashda xatolik")
+# Telegram to‘lov jarayonlari
+@bot.pre_checkout_query_handler(func=lambda query: True)
+def checkout_handler(query):
+    bot.answer_pre_checkout_query(query.id, ok=True)
 
 
-@bot.message_handler(content_types=["successful_payment"])
-def successful_payment(message):
-    uid = str(message.from_user.id)
+@bot.message_handler(content_types=['successful_payment'])
+def got_payment(message):
     payload = message.successful_payment.invoice_payload
-    order = next((o for o in reversed(orders) if o.get("payload") == payload), None)
-    if not order:
-        bot.send_message(message.chat.id, "✅ To'lov qabul qilindi, lekin buyurtma topilmadi. Admin tekshiradi.")
-        logger.warning(f"Payload topilmadi: {payload}")
-        return
-    if order.get("status") == "completed":
-        bot.send_message(message.chat.id, "✅ To'lov allaqachon qayd qilingan.")
-        return
-    order["status"] = "completed"
-    order["completed_date"] = datetime.now().isoformat()
-    users[uid]["balance"] += int(order.get("amount", 0))
+    uid = str(message.from_user.id)
+    amount = message.successful_payment.total_amount // 100
+
+    # Balansni yangilash
+    users[uid]["balance"] += amount
+
+    # Order statusni yangilash
+    order = next((o for o in orders if o.get("payload") == payload), None)
+    if order:
+        order["status"] = "completed"
+
     Database.save_all(users, orders, config, promo_codes)
-    bot.send_message(message.chat.id, f"✅ To'lov muvaffaqiyatli.\n💰 +{order['amount']:,} so'm qo'shildi.", reply_markup=build_main_menu(is_admin(message.from_user.id)))
+    bot.send_message(message.chat.id, f"✅ To'lov qabul qilindi!\n💰 Balans: {users[uid]['balance']} so'm")
+
+
+@bot.message_handler(func=lambda m: m.text == "💰 To'lovlar")
+@admin_required
+def payments_admin(message):
+    text = "📦 <b>To'lovlar ro'yxati</b>\n\n"
+    for order in orders[-10:]:  # oxirgi 10 ta to‘lov
+        text += f"ID: {order['id']} | User: {order['user_id']} | Amount: {order.get('amount', 0)} | Status: {order['status']}\n"
+    bot.send_message(message.chat.id, text)
 
 
 # =====================================
