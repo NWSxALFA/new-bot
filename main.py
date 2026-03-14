@@ -22,12 +22,9 @@ from telebot.types import (
 # =====================================
 # CONFIG
 # =====================================
-TOKEN = os.getenv("BOT_TOKEN", "")
-PAYMENT_PROVIDER_TOKEN = os.getenv("PAYMENT_PROVIDER_TOKEN", "")
-PORT = int(os.getenv("PORT", "8000"))
-
-if not TOKEN:
-    raise RuntimeError("BOT_TOKEN topilmadi. Environment variable ga qo'ying.")
+TOKEN = "BU_YERGA_BOT_TOKEN"
+PAYMENT_PROVIDER_TOKEN = "BU_YERGA_PAYMENT_TOKEN"
+PORT = 8000
 
 bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
 app = Flask(__name__)
